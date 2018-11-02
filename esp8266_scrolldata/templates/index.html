@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>ESP8266 Scrolldata</title>
+  <style type="text/css">
+	.container:after {
+    content: "";
+    display: table;
+    clear: both;
+	}
+	.left {
+		float: left;
+		width: 5%;
+	}
+	.button {
+		color: red;
+		background-color: black;
+		border-radius: 10px;
+		padding: 5px;
+		text-decoration: none;
+		display: block;
+		margin-bottom: 5px;
+	}
+	.right {
+		float: left;
+		width: 92%;
+		height: 500px;
+		overflow: scroll;
+		margin-left: 1%;
+		border: 5px solid black;
+	}
+	.data {
+		margin: 0;
+		list-style-type: none;
+		padding-left: 5px;
+	}
+  </style>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script type="text/javascript">
+	var TIMEOUT = 500;
+
+	function pullData() {
+		$.get('/data', function(data, status) {
+			console.log(data);
+			var item = $('<li>' + data['datetime'] + ': ' + data['state'] + '</li>');
+			var data = $('.data');
+			data.prepend(item);
+			window.setTimeout(pullData, TIMEOUT);
+		});
+	};
+
+	$(function(){
+		window.setTimeout(pullData, TIMEOUT);
+		$('.button').click(function(){
+			var state = $(this).data('state')
+			$.post('/control/' + state);
+			return false;
+		});
+	});
+	</script>
+</head>
+<body>
+<h1>ESP8266 Scrolldata</h1>
+<div class="container">
+	<div class="left">
+		<div class="buttons">
+			<a href="" class="button" data-state="1">Set 1</a>
+			<a href="" class="button" data-state="2">Set 2</a>
+			<a href="" class="button" data-state="otto">Set otto</a>
+		</div>
+	</div>
+	<div class="right">
+		<ul class="data"></ul>
+	</div>
+</div>
+</body>
+</html>
+
