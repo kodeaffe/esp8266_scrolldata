@@ -118,3 +118,16 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
 STATIC_URL = '/static/'
+
+
+# Needs to be JSON-parseable
+LIGHTS = {
+    '1': {
+        'state': False,
+        'brightness': 254,
+    },
+    '2': {
+        'state': False,
+        'brightness': 42,
+    },
+}

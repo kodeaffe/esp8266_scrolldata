@@ -3,74 +3,127 @@
 <head>
 	<title>ESP8266 Scrolldata</title>
   <style type="text/css">
-	.container:after {
-    content: "";
-    display: table;
-    clear: both;
-	}
-	.left {
-		float: left;
-		width: 5%;
-	}
-	.button {
-		color: red;
-		background-color: black;
-		border-radius: 10px;
-		padding: 5px;
-		text-decoration: none;
-		display: block;
-		margin-bottom: 5px;
-	}
-	.right {
-		float: left;
-		width: 92%;
-		height: 500px;
-		overflow: scroll;
-		margin-left: 1%;
-		border: 5px solid black;
-	}
 	.data {
 		margin: 0;
 		list-style-type: none;
-		padding-left: 5px;
+		padding-left: 0;
 	}
   </style>
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.js"></script>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css">
 	<script type="text/javascript">
-	var TIMEOUT = 500;
+	var TIMEOUT = 1000;
 
 	function pullData() {
 		$.get('/data', function(data, status) {
-			console.log(data);
-			var item = $('<li>' + data['datetime'] + ': ' + data['state'] + '</li>');
+			var item = $('<div class="item">' + data['datetime'] + ': ' + data['state'] + '</div>');
 			var data = $('.data');
 			data.prepend(item);
 			window.setTimeout(pullData, TIMEOUT);
 		});
 	};
 
+	function setState(light, state) {
+		var icon = '<i class="lightbulb outline icon"></i>';
+		if (state) {
+			icon = '<i class="lightbulb icon"></i>';
+		}
+		light.find('.state').html(icon);
+	};
+
+	function setBrightness(light, value) {
+		light.find('.brightness').val(value);
+	};
+
+	function pullLights() {
+		$.get('/lights', function(data, status) {
+			$.each(data, function(light_id, val) {
+				var light = $('.card .light-' + light_id);
+				setState(light, val['state']);
+				setBrightness(light, val['brightness']);
+			});
+			window.setTimeout(pullLights, TIMEOUT);
+		});
+	};
+
 	$(function(){
 		window.setTimeout(pullData, TIMEOUT);
-		$('.button').click(function(){
-			var state = $(this).data('state')
+		window.setTimeout(pullLights, TIMEOUT);
+		$('.menu .button').click(function(){
+			var state = $(this).data('state');
 			$.post('/control/' + state);
 			return false;
+		});
+		$('.card .toggle').click(function(){
+			var light_id = $(this).data('light_id');
+			var url = '/light/' + light_id + '/toggle';
+			$.post(url, function(data) {
+				var light = $('.card .light-' + light_id);
+				setState(light, data['state']);
+			});
+			return false;
+		});
+		$('.card .brightness').change(function(){
+			var light_id = $(this).data('light_id');
+			var brightness = $(this).val()
+			var url = '/light/' + light_id + '/brightness/' + brightness;
+			$.post(url, function(data) {
+				var light = $('.card .light-' + light_id);
+				setBrightness(light, data['brightness']);
+			});
+			return true;
 		});
 	});
 	</script>
 </head>
 <body>
-<h1>ESP8266 Scrolldata</h1>
-<div class="container">
-	<div class="left">
-		<div class="buttons">
-			<a href="" class="button" data-state="1">Set 1</a>
-			<a href="" class="button" data-state="2">Set 2</a>
-			<a href="" class="button" data-state="otto">Set otto</a>
+<div class="ui container">
+	<h1>ESP8266 Scrolldata</h1>
+
+	<div class="ui cards">
+		<div class="card">
+			<div class="content light-1">
+				<div class="header">Light 1</div>
+				<div class="description">
+					<div class="ui relaxed divided list">
+						<div class="item">
+							State: <span class="state"><i class="lightbulb outline icon"></i></span>
+							<button class="ui tiny button toggle" data-light_id="1">Toggle</button>
+						</div>
+						<div class="item">
+							HueBri: <input type="range" min="0" max="255" value="0" class="brightness" data-light_id="1" />
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="card">
+			<div class="content light-2">
+				<div class="header">Light 2</div>
+				<div class="description">
+					<div class="ui relaxed divided list">
+						<div class="item">
+							State: <span class="state"><i class="lightbulb outline icon"></i></span>
+							<button class="ui tiny button toggle" data-light_id="2">Toggle</button>
+						</div>
+						<div class="item">
+							HueBri: <input type="range" min="0" max="255" value="0" class="brightness" data-light_id="2" />
+						</div>
+					</div>
+				</div>
+			</div>
 		</div>
 	</div>
-	<div class="right">
-		<ul class="data"></ul>
+
+	<div class="ui stackable menu">
+		<a class="item button" data-state="1">Set 1</a>
+		<a class="item button" data-state="2">Set 2</a>
+		<a class="item button" data-state="otto">Set otto</a>
+	</div>
+	<div class="ui segment">
+		<h2>Data</h2>
+		<div class="ui list data"></div>
 	</div>
 </div>
 </body>

@@ -16,11 +16,23 @@ Including another URLconf
 #from django.contrib import admin
 from django.urls import path
 
-from esp8266_scrolldata.views import ControlView, DataView, IndexView
+from esp8266_scrolldata.views import (
+    ControlView, DataView, IndexView, LightsView, LightSetBrightnessView, LightToggleView)
 
 urlpatterns = [
 #    path('admin/', admin.site.urls),
     path('control/<state>', ControlView.as_view(), name='control'),
     path('data', DataView.as_view(), name='data'),
+    path('lights', LightsView.as_view(), name='lights'),
+    path(
+        'light/<light_id>/toggle',
+        LightToggleView.as_view(),
+        name='light_toggle'
+    ),
+    path(
+        'light/<light_id>/brightness/<brightness>',
+        LightSetBrightnessView.as_view(),
+        name='light_set_brightness'
+    ),
     path('', IndexView.as_view(), name='index'),
 ]

@@ -36,3 +36,39 @@ class DataView(JSONResponseMixin, TemplateView):
 
 class IndexView(TemplateView):
     template_name = 'index.html'
+
+
+class LightsView(JSONResponseMixin, TemplateView):
+    def get_data(self, context):
+        return getattr(settings, 'LIGHTS', {})
+
+
+class LightMixin(JSONResponseMixin):
+    light = None
+
+    def get_data(self, context):
+        return self.light
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class LightSetBrightnessView(LightMixin, TemplateView):
+    def post(self, *args, **kwargs):
+        lights = getattr(settings, 'LIGHTS', {})
+        try:
+            self.light = lights[self.kwargs['light_id']]
+            self.light['brightness'] = self.kwargs['brightness']
+        except KeyError:
+            pass
+        return self.get(*args, **kwargs)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class LightToggleView(LightMixin, TemplateView):
+    def post(self, *args, **kwargs):
+        lights = getattr(settings, 'LIGHTS', {})
+        try:
+            self.light = lights[self.kwargs['light_id']]
+            self.light['state'] = not self.light['state']
+        except KeyError:
+            pass
+        return self.get(*args, **kwargs)
