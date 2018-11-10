@@ -1,0 +1,16 @@
+[Unit]
+Description=esp8266_scrolldata
+After=apache2.service
+Requires=apache2.service
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+SyslogIdentifier=esp8266_scrolldata
+Restart=on-failure
+WorkingDirectory=/var/www/esp8266_scrolldata
+ExecStart=/var/www/.local/bin/pipenv run esp8266_scrolldata/manage.py runserver 3001
+
+[Install]
+WantedBy=multi-user.target
